@@ -1,13 +1,23 @@
 <?php
+
 /**
  * @file
- * bootstrap-dropdown.vars.php
+ * Stub file for "bootstrap_dropdown" theme hook [pre]process functions.
  */
 
 /**
- * Implements hook_preprocess_bootstrap_dropdown().
+ * Pre-processes variables for the "bootstrap_dropdown" theme hook.
+ *
+ * See theme function for list of available variables.
+ *
+ * @param array $variables
+ *   An associative array of variables, passed by reference.
+ *
+ * @see bootstrap_bootstrap_dropdown()
+ *
+ * @ingroup theme_preprocess
  */
-function bootstrap_preprocess_bootstrap_dropdown(&$variables) {
+function bootstrap_preprocess_bootstrap_dropdown(array &$variables) {
   $element = &$variables['element'];
 
   // Provide defaults.
@@ -29,7 +39,7 @@ function bootstrap_preprocess_bootstrap_dropdown(&$variables) {
     if (is_string($element['#toggle'])) {
       $element['#toggle'] = array(
         '#theme' => 'link__bootstrap_dropdown__toggle',
-        '#text' => $element['#toggle'],
+        '#text' => filter_xss_admin($element['#toggle']),
         '#path' => '#',
         '#options' => array(
           'attributes' => array(),
@@ -57,9 +67,18 @@ function bootstrap_preprocess_bootstrap_dropdown(&$variables) {
 }
 
 /**
- * Implements hook_process_bootstrap_dropdown().
+ * Processes variables for the "bootstrap_dropdown" theme hook.
+ *
+ * See theme function for list of available variables.
+ *
+ * @param array $variables
+ *   An associative array of variables, passed by reference.
+ *
+ * @see bootstrap_bootstrap_dropdown()
+ *
+ * @ingroup theme_process
  */
-function bootstrap_process_bootstrap_dropdown(&$variables) {
+function bootstrap_process_bootstrap_dropdown(array &$variables) {
   $element = &$variables['element'];
 
   $items = array();
@@ -78,6 +97,10 @@ function bootstrap_process_bootstrap_dropdown(&$variables) {
     // Disabled.
     elseif (is_array($data) && (!empty($data['disabled']) || !empty($data['#disabled']))) {
       $item_classes[] = 'disabled';
+    }
+    // Active.
+    elseif (is_array($data) && (!empty($data['active']) || !empty($data['#active']))) {
+      $item_classes[] = 'active';
     }
 
     // Construct item_list item.

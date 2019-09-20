@@ -1,22 +1,28 @@
 <?php
+
 /**
  * @file
- * file-upload-help.func.php
+ * Stub file for bootstrap_file_upload_help().
  */
 
 /**
  * Returns HTML for help text based on file upload validators.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - description: The normal description for this field, specified by the
  *     user.
  *   - upload_validators: An array of upload validators as used in
  *     $element['#upload_validators'].
  *
- * @ingroup themeable
+ * @return string
+ *   The constructed HTML.
+ *
+ * @see theme_file_upload_help()
+ *
+ * @ingroup theme_functions
  */
-function bootstrap_file_upload_help($variables) {
+function bootstrap_file_upload_help(array $variables) {
   // If popover's are disabled, just theme this normally.
   if (!bootstrap_setting('popover_enabled')) {
     return theme_file_upload_help($variables);

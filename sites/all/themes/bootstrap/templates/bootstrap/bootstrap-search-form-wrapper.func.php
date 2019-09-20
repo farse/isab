@@ -1,13 +1,22 @@
 <?php
+
 /**
  * @file
- * bootstrap-search-form-wrapper.func.php
+ * Stub file for bootstrap_bootstrap_search_form_wrapper().
  */
 
 /**
- * Theme function implementation for bootstrap_search_form_wrapper.
+ * Returns HTML for the Bootstrap search form wrapper.
+ *
+ * @param array $variables
+ *   An associative array of variables.
+ *
+ * @return string
+ *   The constructed HTML markup.
+ *
+ * @ingroup theme_functions
  */
-function bootstrap_bootstrap_search_form_wrapper($variables) {
+function bootstrap_bootstrap_search_form_wrapper(array $variables) {
   $output = '<div class="input-group">';
   $output .= $variables['element']['#children'];
   $output .= '<span class="input-group-btn">';

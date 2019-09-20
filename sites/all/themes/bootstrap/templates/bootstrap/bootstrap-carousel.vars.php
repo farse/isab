@@ -1,13 +1,23 @@
 <?php
+
 /**
  * @file
- * bootstrap-carousel.vars.php
+ * Stub file for "bootstrap_carousel" theme hook [pre]process functions.
  */
 
 /**
- * Implements hook_preprocess_bootstrap_carousel().
+ * Pre-processes variables for the "bootstrap_carousel" theme hook.
+ *
+ * See template for list of available variables.
+ *
+ * @param array $variables
+ *   An associative array of variables, passed by reference.
+ *
+ * @see bootstrap-carousel.tpl.php
+ *
+ * @ingroup theme_preprocess
  */
-function bootstrap_preprocess_bootstrap_carousel(&$variables) {
+function bootstrap_preprocess_bootstrap_carousel(array &$variables) {
   $variables['attributes']['class'][] = 'carousel';
   $variables['attributes']['class'][] = 'slide';
   $variables['attributes']['data-ride'] = 'carousel';
@@ -32,9 +42,18 @@ function bootstrap_preprocess_bootstrap_carousel(&$variables) {
 }
 
 /**
- * Implements hook_process_bootstrap_carousel().
+ * Processes variables for the "bootstrap_carousel" theme hook.
+ *
+ * See template for list of available variables.
+ *
+ * @param array $variables
+ *   An associative array of variables, passed by reference.
+ *
+ * @see bootstrap-carousel.tpl.php
+ *
+ * @ingroup theme_process
  */
-function bootstrap_process_bootstrap_carousel(&$variables) {
+function bootstrap_process_bootstrap_carousel(array &$variables) {
   $variables['target'] = '#' . $variables['attributes']['id'];
   $variables['attributes'] = drupal_attributes($variables['attributes']);
 
@@ -52,5 +71,14 @@ function bootstrap_process_bootstrap_carousel(&$variables) {
       'description' => NULL,
       'url' => NULL,
     );
+
+    if (!empty($variables['items'][$delta]['title'])) {
+      $variables['items'][$delta]['title'] = is_scalar($item['title']) ? filter_xss_admin($item['title']) : render($item['title']);
+    }
+
+    if (!empty($variables['items'][$delta]['description'])) {
+      $variables['items'][$delta]['description'] = is_scalar($item['description']) ? filter_xss_admin($item['description']) : render($item['description']);
+    }
+
   }
 }

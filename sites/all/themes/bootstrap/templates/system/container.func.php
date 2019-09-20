@@ -1,13 +1,30 @@
 <?php
+
 /**
  * @file
- * container.func.php
+ * Stub file for bootstrap_container().
  */
 
 /**
- * Overrides theme_container().
+ * Returns HTML to wrap child elements in a container.
+ *
+ * Used for grouped form items. Can also be used as a #theme_wrapper for any
+ * renderable element, to surround it with a <div> and add attributes such as
+ * classes or an HTML id.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *     Properties used: #id, #attributes, #children.
+ *
+ * @return string
+ *   The constructed HTML.
+ *
+ * @see theme_container()
+ *
+ * @ingroup theme_functions
  */
-function bootstrap_container($variables) {
+function bootstrap_container(array $variables) {
   $element = $variables['element'];
 
   // Ensure #attributes is set.
@@ -24,7 +41,9 @@ function bootstrap_container($variables) {
     $element['#attributes']['class'][] = 'form-wrapper';
 
     // Add Bootstrap "form-group" class.
-    $element['#attributes']['class'][] = 'form-group';
+    if (!isset($element['#form_group']) || !!$element['#form_group']) {
+      $element['#attributes']['class'][] = 'form-group';
+    }
   }
 
   return '<div' . drupal_attributes($element['#attributes']) . '>' . $element['#children'] . '</div>';

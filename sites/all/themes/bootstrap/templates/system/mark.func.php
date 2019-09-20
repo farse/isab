@@ -1,13 +1,26 @@
 <?php
+
 /**
  * @file
- * mark.func.php
+ * Stub file for bootstrap_mark().
  */
 
 /**
- * Overrides theme_mark().
+ * Returns HTML for a marker for new or updated content.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - type: Number representing the marker type to display. See MARK_NEW,
+ *     MARK_UPDATED, MARK_READ.
+ *
+ * @return string
+ *   The constructed HTML.
+ *
+ * @see theme_mark()
+ *
+ * @ingroup theme_functions
  */
-function bootstrap_mark($variables) {
+function bootstrap_mark(array $variables) {
   global $user;
   if ($user->uid) {
     if ($variables['type'] == MARK_NEW) {

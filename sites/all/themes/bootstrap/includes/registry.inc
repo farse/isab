@@ -1,55 +1,52 @@
 <?php
+
 /**
  * @file
- * registry.inc
- *
- * Contains functions specific to the theme registry.
- *
- * Theme templates, functions and [pre]process functions
- *
- * Theme templates `*.tpl.php` files are stored in the `theme` directory along
- * with `*.func.php` and `*.vars.php` files. The latter two are enabled by the
- * processing done below. The three types of files can be grouped into
- * sub-directories. It is recommended that they are grouped by the modules
- * they originate from. Theme specific hooks should be grouped into a folder
- * named after the theme itself.
- *
- * Function files store theme functions directly related to the base file name
- * or "theme hook", e.g., the hook `foo` would be handled by the
- * `bootstrap_foo` function which would be stored in `foo.func.php`.
- *
- * Variable files store [pre]process functions directly related to the base file
- * file name or "theme hook" just like function files, e.g., the hook `html`
- * would be handled by the `bootstrap_preprocess_html` function held in
- * `html.vars.php`.
- *
- * The two types of files mentioned above should also be used to hold support
- * functions specific to the theming hook. When a function grows too large,
- * break it apart so it becomes more readable.
- *
- * Files specific to theme functions and variable preprocess/process functions
- * should be named after the `base hook`. Alternate hooks (or what is commonly
- * referred to as "hook suggestions") should not be used for the file name.
- * The contents of the theme functions file can hold hook suggestions and it
- * should be related to the base hook. [Pre]process functions for hook
- * suggestions are not supported in Drupal 7 core.
- *
- * Using these files will keep the `template.php` file clean and grouping them
- * within the theme directory will make it easier to discover and work with.
- *
- * Warning: Using core's `path_to_theme` function may return the wrong path.
- * It is difficult to predict to begin with and the changes made here will
- * make it even worse. Use `drupal_get_path('theme', 'bootstrap')` instead.
+ * List of functions used to alter the theme registry in Bootstrap based themes.
  */
 
 /**
- * Stub implementation for hook_theme().
+ * @addtogroup registry
+ * @{
+ */
+
+// Define additional sub-groups for creating lists for all the theme files.
+/**
+ * @defgroup theme_functions Theme Functions (.func.php)
+ *
+ * List of theme functions used in the Drupal Bootstrap base theme.
+ *
+ * View the parent topic for additional documentation.
+ */
+/**
+ * @defgroup theme_preprocess Theme Preprocess Functions (.vars.php)
+ *
+ * List of theme preprocess functions used in the Drupal Bootstrap base theme.
+ *
+ * View the parent topic for additional documentation.
+ */
+/**
+ * @defgroup theme_process Theme Process Functions (.vars.php)
+ *
+ * List of theme process functions used in the Drupal Bootstrap base theme.
+ *
+ * View the parent topic for additional documentation.
+ */
+/**
+ * @defgroup templates Theme Templates (.tpl.php)
+ *
+ * List of theme templates used in the Drupal Bootstrap base theme.
+ *
+ * View the parent topic for additional documentation.
+ */
+
+/**
+ * Stub implementation for bootstrap_theme().
  *
  * This base-theme's custom theme hook implementations. Never define "path"
  * or "template" as these are detected and automatically added.
  *
  * @see bootstrap_theme_registry_alter()
- * @see bootstrap_hook_theme_complete()
  * @see bootstrap_theme()
  * @see hook_theme()
  */
@@ -79,7 +76,9 @@ function _bootstrap_theme(&$existing, $type, $theme, $path) {
       'heading' => '',
       'body' => '',
       'footer' => '',
+      'dialog_attributes' => array(),
       'attributes' => array(),
+      'size' => '',
       'html_heading' => FALSE,
     ),
   );
@@ -110,7 +109,7 @@ function bootstrap_theme_registry_alter(&$registry) {
   }
 
   // Inject the "footer" variable default in the existing "table" hook.
-  // @see https://drupal.org/node/806982
+  // @see https://www.drupal.org/node/806982
   // @todo Make this discoverable in some way instead of a manual injection.
   $registry['table']['variables']['footer'] = NULL;
 
@@ -121,6 +120,28 @@ function bootstrap_theme_registry_alter(&$registry) {
   // suggestion phased function invocations. This must be run after separately
   // and after all includes have been loaded.
   _bootstrap_process_theme_registry_suggestions($registry, $themes);
+
+  // Merge both "html" and "page" theme hooks into "maintenance_page". Create
+  // a fake "page" variable to satisfy both "html" and "page" preprocess/process
+  // functions. Whether or not they stumble over each other doesn't matter since
+  // the "maintenance_page" theme hook uses the "content" variable instead.
+  $registry['maintenance_page']['variables']['page'] = array(
+    '#show_messages' => TRUE,
+    '#children' => NULL,
+    'page_bottom' => array(),
+    'page_top' => array(),
+  );
+  foreach (array('html', 'page') as $theme_hook) {
+    foreach (array('includes', 'preprocess functions', 'process functions') as $property) {
+      if (!isset($registry['maintenance_page'][$property])) {
+        $registry['maintenance_page'][$property] = array();
+      }
+      if (!isset($registry[$theme_hook][$property])) {
+        $registry[$theme_hook][$property] = array();
+      }
+      $registry['maintenance_page'][$property] = array_merge($registry['maintenance_page'][$property], $registry[$theme_hook][$property]);
+    }
+  }
 
   // Post-process theme registry. This happens after all altering has occurred.
   foreach ($registry as $hook => $info) {
@@ -175,7 +196,7 @@ function bootstrap_theme_registry_alter(&$registry) {
  * @see _theme_process_registry()
  * @see _theme_build_registry()
  */
-function _bootstrap_process_theme_registry(&$registry, $themes) {
+function _bootstrap_process_theme_registry(array &$registry, $themes) {
   // Convert to an array if needed.
   if (is_string($themes)) {
     $themes = array();
@@ -208,9 +229,6 @@ function _bootstrap_process_theme_registry(&$registry, $themes) {
         // File to be included by core's theme function when a theme hook is
         // invoked.
         if (isset($registry[$hook])) {
-          if (!isset($registry[$hook][$phase_key])) {
-            $registry[$hook][$phase_key] = array();
-          }
           if (!isset($registry[$hook]['includes'])) {
             $registry[$hook]['includes'] = array();
           }
@@ -231,6 +249,11 @@ function _bootstrap_process_theme_registry(&$registry, $themes) {
 
       // Iterate over each registered hook.
       foreach ($registry as $hook => $info) {
+        // Ensure the current phase callback functions array exists.
+        if (!isset($registry[$hook][$phase_key])) {
+          $registry[$hook][$phase_key] = array();
+        }
+
         // Remove function callbacks if a template was found.
         if (isset($info['function']) && isset($info['template'])) {
           unset($registry[$hook]['function']);
@@ -250,14 +273,14 @@ function _bootstrap_process_theme_registry(&$registry, $themes) {
 
         // Setup a default "context" variable. This allows #context to be passed
         // to every template and theme function.
-        // @see https://drupal.org/node/2035055
+        // @see https://www.drupal.org/node/2035055
         if (isset($info['variables']) && !isset($info['variables']['context'])) {
           $registry[$hook]['variables']['context'] = array();
         }
 
         // Setup a default "icon" variable. This allows #icon to be passed
         // to every template and theme function.
-        // @see https://drupal.org/node/2219965
+        // @see https://www.drupal.org/node/2219965
         if (isset($info['variables']) && !isset($info['variables']['icon'])) {
           $registry[$hook]['variables']['icon'] = NULL;
         }
@@ -283,7 +306,7 @@ function _bootstrap_process_theme_registry(&$registry, $themes) {
  *
  * @see https://www.drupal.org/node/2098551
  */
-function _bootstrap_registry_sort_phase_functions(&$functions, $hook, $phase, $themes) {
+function _bootstrap_registry_sort_phase_functions(array &$functions, $hook, $phase, array $themes) {
   // Immediately return if there is nothing to sort.
   if (count($functions) < 2) {
     return;
@@ -328,13 +351,10 @@ function _bootstrap_registry_sort_phase_functions(&$functions, $hook, $phase, $t
  * @param string|array $themes
  *   The name of the theme or list of theme names to process.
  *
- * @return array
- *   The functions found, suitable for returning from hook_theme;
- *
- * @see https://drupal.org/node/939462
+ * @see https://www.drupal.org/node/939462
  * @see drupal_find_theme_functions()
  */
-function _bootstrap_process_theme_registry_suggestions(&$registry, $themes) {
+function _bootstrap_process_theme_registry_suggestions(array &$registry, $themes) {
   // Convert to an array if needed.
   if (is_string($themes)) {
     $themes = array();
@@ -404,6 +424,11 @@ function _bootstrap_process_theme_registry_suggestions(&$registry, $themes) {
               // registry, one must be created if base hook information was
               // found, otherwise it will be ignored.
               if (!isset($registry[$hook])) {
+                $registry[$base_hook] += array(
+                  'type' => 'theme',
+                  'preprocess functions' => array(),
+                  'process functions' => array(),
+                );
                 $hook_type = isset($registry[$base_hook]['function']) ? 'function' : 'template';
                 $arg_name = isset($registry[$base_hook]['variables']) ? 'variables' : 'render element';
                 $registry[$hook] = array(
@@ -457,6 +482,7 @@ function _bootstrap_process_theme_registry_suggestions(&$registry, $themes) {
  * @see https://www.drupal.org/node/2339447
  */
 if (!function_exists('drupal_group_functions_by_prefix')) {
+
   /**
    * Group all user functions by word before first underscore.
    *
@@ -475,4 +501,9 @@ if (!function_exists('drupal_group_functions_by_prefix')) {
 
     return $grouped_functions;
   }
+
 }
+
+/**
+ * @} End of "addtogroup registry".
+ */

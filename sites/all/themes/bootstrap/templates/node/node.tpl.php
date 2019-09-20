@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Default theme implementation to display a node.
@@ -76,7 +77,7 @@
  * @see template_preprocess_node()
  * @see template_process()
  *
- * @ingroup themeable
+ * @ingroup templates
  */
 ?>
 <article id="node-<?php print $node->nid; ?>" class="<?php print $classes; ?> clearfix"<?php print $attributes; ?>>
@@ -102,11 +103,16 @@
     hide($content['field_tags']);
     print render($content);
   ?>
-  <?php if (!empty($content['field_tags']) || !empty($content['links'])): ?>
-  <footer>
-    <?php print render($content['field_tags']); ?>
-    <?php print render($content['links']); ?>
+  <?php
+    // Only display the wrapper div if there are tags or links.
+    $field_tags = render($content['field_tags']);
+    $links = render($content['links']);
+    if ($field_tags || $links):
+  ?>
+   <footer>
+     <?php print $field_tags; ?>
+     <?php print $links; ?>
   </footer>
-  <?php endif; ?>
+    <?php endif; ?>
   <?php print render($content['comments']); ?>
 </article>
